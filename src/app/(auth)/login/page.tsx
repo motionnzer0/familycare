@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { loginAction } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,17 +20,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // In Slice 0, this establishes the UI & form foundation
-      // Slice 1 wires the live Supabase Auth actions
-      if (!email || !password) {
-        setError("Please enter both email and password.");
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+
+      const res = await loginAction(formData);
+      if (!res?.success) {
+        setError(res?.error || "Invalid email or password.");
         setLoading(false);
-        return;
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      // In Server Action, redirect throws a Next.js navigation error which is caught by Next.js
     }
   };
 

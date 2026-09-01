@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { registerAction } from "@/lib/actions/auth";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
@@ -20,20 +21,18 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      if (!fullName || !email || !password) {
-        setError("Please fill in all fields.");
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
+
+      const res = await registerAction(formData);
+      if (!res?.success) {
+        setError(res?.error || "Registration failed. Please check your details.");
         setLoading(false);
-        return;
-      }
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters.");
-        setLoading(false);
-        return;
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      // In Server Action, redirect throws a Next.js navigation error which is caught by Next.js
     }
   };
 
