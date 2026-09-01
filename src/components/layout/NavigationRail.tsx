@@ -14,6 +14,7 @@ import {
   StickyNote,
   Sun,
   Users,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,11 @@ export const NAVIGATION_ITEMS = [
     label: "Updates",
     href: "/updates",
     icon: History,
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
   },
   {
     label: "Emergency",
