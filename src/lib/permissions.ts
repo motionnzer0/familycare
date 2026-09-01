@@ -26,9 +26,12 @@ export function checkPermission(
     return true;
   }
 
-  // Coordinator: Full CRUD on care records; cannot transfer ownership or delete workspace
+  // Coordinator: Full CRUD on care records; cannot transfer ownership, delete workspace, or remove members
   if (userRole === "coordinator") {
     if (resource === "workspace" && (action === "delete" || action === "assign")) {
+      return false;
+    }
+    if (resource === "member" && (action === "delete" || action === "update")) {
       return false;
     }
     return true;

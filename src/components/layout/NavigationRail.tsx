@@ -9,7 +9,11 @@ import {
   FileText,
   Heart,
   History,
+  Pill,
+  Shield,
+  StickyNote,
   Sun,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,9 +34,9 @@ export const NAVIGATION_ITEMS = [
     icon: CalendarDays,
   },
   {
-    label: "Care",
-    href: "/care",
-    icon: Heart,
+    label: "Medications",
+    href: "/medications",
+    icon: Pill,
   },
   {
     label: "Documents",
@@ -40,9 +44,25 @@ export const NAVIGATION_ITEMS = [
     icon: FileText,
   },
   {
+    label: "Notes",
+    href: "/notes",
+    icon: StickyNote,
+  },
+  {
+    label: "Care Team",
+    href: "/team",
+    icon: Users,
+  },
+  {
     label: "Updates",
     href: "/updates",
     icon: History,
+  },
+  {
+    label: "Emergency",
+    href: "/emergency",
+    icon: Shield,
+    isEmergency: true,
   },
 ];
 
@@ -58,16 +78,19 @@ export function NavigationRail() {
         {NAVIGATION_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+            pathname === item.href || (item.href !== "/today" && pathname.startsWith(`${item.href}/`));
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center space-x-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors min-h-touch",
+                "flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors min-h-touch",
+                item.isEmergency && "text-red-800 hover:bg-red-50",
                 isActive
-                  ? "bg-brand text-white font-semibold shadow-sm"
+                  ? item.isEmergency
+                    ? "bg-red-700 text-white shadow-sm"
+                    : "bg-brand text-white shadow-sm"
                   : "text-content-muted hover:bg-surface hover:text-content"
               )}
               aria-current={isActive ? "page" : undefined}

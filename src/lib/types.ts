@@ -6,8 +6,19 @@ export type MemberStatus = "active" | "removed";
 export type InvitationStatus = "pending" | "accepted" | "cancelled" | "expired";
 export type TaskStatus = "open" | "completed";
 export type AppointmentStatus = "scheduled" | "completed" | "cancelled";
-export type MedicationStatus = "active" | "archived";
-export type DocumentCategory = "medical_insurance" | "legal_financial" | "care_plan" | "identification" | "other";
+export type MedicationStatus = "active" | "paused" | "discontinued" | "archived";
+export type DocumentCategory =
+  | "Insurance"
+  | "Medical"
+  | "Legal"
+  | "Financial"
+  | "Identification"
+  | "Other"
+  | "medical_insurance"
+  | "legal_financial"
+  | "care_plan"
+  | "other";
+
 export type DocumentAvailability = "processing" | "available" | "unavailable" | "error";
 
 export type PermissionAction =
@@ -48,30 +59,43 @@ export interface WorkspaceMember {
   workspace_id: string;
   user_id: string;
   role: Role;
-  relationship_label: string | null;
+  relationship_label?: string | null;
   display_name: string | null;
   status: MemberStatus;
   joined_at: string;
-  removed_at: string | null;
+  removed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WorkspaceInvitation {
+  id: string;
+  workspace_id: string;
+  email: string;
+  role: Role;
+  invited_by: string;
+  token: string;
+  status: InvitationStatus;
+  expires_at: string;
   created_at: string;
-  updated_at: string;
+  accepted_at?: string | null;
 }
 
 export interface CareRecipient {
   id: string;
   workspace_id: string;
   preferred_name: string;
-  legal_name: string | null;
-  photo_path: string | null;
-  birth_date: string | null;
-  phone: string | null;
-  email: string | null;
-  address_line1: string | null;
-  address_line2: string | null;
-  city: string | null;
-  state: string | null;
-  postal_code: string | null;
-  care_context: string | null;
+  legal_name?: string | null;
+  photo_path?: string | null;
+  birth_date?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  care_context?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -119,14 +143,21 @@ export interface Medication {
   id: string;
   workspace_id: string;
   name: string;
-  form_strength: string | null;
-  instructions: string | null;
-  prescriber_pharmacy: string | null;
-  note: string | null;
+  dosage?: string | null;
+  form_strength?: string | null;
+  instructions?: string | null;
+  frequency?: string | null;
+  schedule?: string | null;
+  prescribing_provider?: string | null;
+  prescriber_pharmacy?: string | null;
+  notes?: string | null;
+  note?: string | null;
   status: MedicationStatus;
-  last_reviewed_at: string | null;
-  last_reviewed_by: string | null;
-  created_by: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  last_reviewed_at?: string | null;
+  last_reviewed_by?: string | null;
+  created_by?: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -137,13 +168,15 @@ export interface Document {
   workspace_id: string;
   title: string;
   file_path: string;
-  file_name: string;
+  file_name?: string;
   file_size: number;
   mime_type: string;
-  category: DocumentCategory | null;
-  document_date: string | null;
-  note: string | null;
-  availability: DocumentAvailability;
+  category: string;
+  is_emergency_access?: boolean;
+  notes?: string | null;
+  note?: string | null;
+  document_date?: string | null;
+  availability?: DocumentAvailability;
   uploaded_by: string;
   created_at: string;
   updated_at: string;
@@ -155,6 +188,9 @@ export interface Note {
   workspace_id: string;
   title: string | null;
   body: string;
+  category?: string;
+  related_appointment_id?: string | null;
+  related_task_id?: string | null;
   author_id: string;
   created_at: string;
   updated_at: string;
