@@ -1,0 +1,32 @@
+:root {
+  /* Surfaces & Canvas */
+  --color-canvas: #F8FAF9;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F5F3;
+  --color-border: #CBD5D1;
+
+  /* Typography Colors */
+  --color-text: #1F2937;
+  --color-text-muted: #4B5563;
+  --color-text-subtle: #6B7280;
+
+  /* Brand / Primary */
+  --color-primary-700: #0F766E;
+  --color-primary-100: #CCFBF1;
+
+  /* Focus Indicator */
+  --color-focus: #2563EB;
+
+  /* Semantic Status Colors */
+  --color-danger-700: #B91C1C;
+  --color-danger-100: #FEE2E2;
+
+  --color-warning-800: #92400E;
+  --color-warning-100: #FEF3C7;
+
+  --color-success-800: #166534;
+  --color-success-100: #DCFCE7;
+
+  --color-info-800: #1E40AF;
+  --color-info-100: #DBEAFE;
+}
