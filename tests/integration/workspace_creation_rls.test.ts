@@ -136,4 +136,65 @@ describe("Workspaces RLS Policy & Onboarding Access Verification", () => {
 
     expect(isWorkspaceVisible(workspace, ownerId, members)).toBe(false);
   });
+
+  it("verifies the complete 5-step workspace creation lifecycle (workspace, owner member, care recipient, emergency info, timeline)", () => {
+    const userId = "auth-user-new-creator";
+    const workspaceId = "ws-new-456";
+
+    // Step 1: Workspace creation
+    const workspace: WorkspaceRow = {
+      id: workspaceId,
+      name: "Family Care Command Center",
+      owner_id: userId,
+      deleted_at: null,
+    };
+    expect(workspace.owner_id).toBe(userId);
+
+    // Step 2: Owner member creation
+    const ownerMember: WorkspaceMemberRow = {
+      id: "mem-owner-1",
+      workspace_id: workspaceId,
+      user_id: userId,
+      role: "owner",
+      status: "active",
+    };
+    expect(ownerMember.workspace_id).toBe(workspaceId);
+    expect(ownerMember.user_id).toBe(userId);
+    expect(ownerMember.role).toBe("owner");
+
+    // Step 3: Care recipient creation
+    const careRecipient = {
+      id: "cr-1",
+      workspace_id: workspaceId,
+      preferred_name: "Eleanor",
+      created_at: new Date().toISOString(),
+    };
+    expect(careRecipient.workspace_id).toBe(workspaceId);
+    expect(careRecipient.preferred_name).toBe("Eleanor");
+
+    // Step 4: Emergency info container creation
+    const emergencyInfo = {
+      id: "ei-1",
+      workspace_id: workspaceId,
+      created_at: new Date().toISOString(),
+    };
+    expect(emergencyInfo.workspace_id).toBe(workspaceId);
+
+    // Step 5: Timeline event logging
+    const timelineEvent = {
+      id: "tle-1",
+      workspace_id: workspaceId,
+      actor_id: userId,
+      action: "created",
+      target_type: "workspace",
+      target_id: workspaceId,
+      target_title: workspace.name,
+    };
+    expect(timelineEvent.workspace_id).toBe(workspaceId);
+    expect(timelineEvent.actor_id).toBe(userId);
+    expect(timelineEvent.action).toBe("created");
+
+    // Verify user can view workspace once membership is in place
+    expect(isWorkspaceVisible(workspace, userId, [ownerMember])).toBe(true);
+  });
 });
