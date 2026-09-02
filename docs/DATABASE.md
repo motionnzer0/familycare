@@ -326,7 +326,7 @@ Extended profile information for workspace display. Supplements Supabase Auth's 
 
 Every table with workspace-scoped data has RLS policies that enforce:
 
-1. **SELECT:** Active workspace members with any valid role (`owner`, `coordinator`, `contributor`, `viewer`) can read workspace records where `deleted_at IS NULL`.
+1. **SELECT:** Active workspace members with any valid role (`owner`, `coordinator`, `contributor`, `viewer`) or the workspace owner (`owner_id = auth.uid() OR is_workspace_member(id)`) can read workspace records where `deleted_at IS NULL`.
 2. **INSERT:**
    - Tasks: `owner`, `coordinator`, `contributor`
    - Appointments: `owner`, `coordinator`
