@@ -34,7 +34,7 @@ export async function getActiveWorkspaceContext(): Promise<WorkspaceContext | nu
   // 1. Fetch user's active memberships
   let membershipQuery = supabase
     .from("workspace_members")
-    .select("*, workspaces(*), workspaces(care_recipients(*))")
+    .select("*, workspaces(*, care_recipients(*))")
     .eq("user_id", user.id)
     .eq("status", "active");
 
@@ -49,7 +49,7 @@ export async function getActiveWorkspaceContext(): Promise<WorkspaceContext | nu
     if (activeWorkspaceId) {
       const { data: fallbackMemberships } = await supabase
         .from("workspace_members")
-        .select("*, workspaces(*), workspaces(care_recipients(*))")
+        .select("*, workspaces(*, care_recipients(*))")
         .eq("user_id", user.id)
         .eq("status", "active")
         .limit(1);

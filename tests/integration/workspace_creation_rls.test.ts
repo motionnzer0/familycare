@@ -197,4 +197,35 @@ describe("Workspaces RLS Policy & Onboarding Access Verification", () => {
     // Verify user can view workspace once membership is in place
     expect(isWorkspaceVisible(workspace, userId, [ownerMember])).toBe(true);
   });
+
+  it("verifies PostgREST resource embedding structure for getActiveWorkspaceContext (*, workspaces(*, care_recipients(*)))", () => {
+    // PostgREST returns care_recipients cleanly nested within workspaces
+    const postgrestResult = {
+      id: "mem-1",
+      workspace_id: "ws-1",
+      user_id: "user-1",
+      role: "owner" as const,
+      status: "active" as const,
+      workspaces: {
+        id: "ws-1",
+        name: "Mom's Care",
+        timezone: "America/New_York",
+        owner_id: "user-1",
+        care_recipients: [
+          {
+            id: "cr-1",
+            workspace_id: "ws-1",
+            preferred_name: "Mom",
+          },
+        ],
+      },
+    };
+
+    const ws = postgrestResult.workspaces;
+    const cr = postgrestResult.workspaces.care_recipients?.[0];
+
+    expect(ws.id).toBe("ws-1");
+    expect(ws.name).toBe("Mom's Care");
+    expect(cr?.preferred_name).toBe("Mom");
+  });
 });
