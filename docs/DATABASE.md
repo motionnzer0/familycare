@@ -335,7 +335,7 @@ Every table with workspace-scoped data has RLS policies that enforce:
    - Notes: `owner`, `coordinator`, `contributor`
    - Emergency Info & Contacts: `owner`, `coordinator`
    - Care Profile: `owner`, `coordinator`
-   - Timeline Events: Server-side service-role only
+   - Timeline Events: Active workspace members for own actions (`auth.uid() = actor_id`)
 3. **UPDATE:**
    - Care records, Medications, Emergency Info: `owner`, `coordinator`
    - Tasks: `owner`, `coordinator`, or `contributor` (updating own created task or completing assigned/unassigned task)
@@ -369,12 +369,12 @@ CREATE POLICY "tasks_insert" ON tasks
   );
 ```
 
-Timeline events have a special INSERT-only policy:
+Timeline events have an append-only policy:
 
 ```sql
--- INSERT: Only via server-side functions (service role)
+-- INSERT: Active workspace members for own actions (is_workspace_member AND auth.uid() = actor_id)
 -- SELECT: Members can read workspace timeline
--- UPDATE/DELETE: Denied to all application users
+-- UPDATE/DELETE: Denied to all application users (immutable audit trail)
 ```
 
 ## 5. Migration Strategy
