@@ -115,7 +115,7 @@ export async function acceptInvitationAction(
     .eq("token", token)
     .eq("status", "pending")
     .gt("expires_at", new Date().toISOString())
-    .single();
+    .maybeSingle();
 
   if (error || !invitation) {
     return {
@@ -132,7 +132,7 @@ export async function acceptInvitationAction(
     .select("id, status")
     .eq("workspace_id", workspaceId)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (existingMember) {
     if (existingMember.status === "active") {
@@ -233,7 +233,7 @@ export async function updateMemberRoleAction(
     .select("*")
     .eq("id", parsed.data.memberId)
     .eq("workspace_id", context.workspace.id)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !targetMember) {
     return { success: false, error: "Member not found" };
@@ -290,7 +290,7 @@ export async function removeMemberAction(memberId: string): Promise<ActionResult
     .select("*")
     .eq("id", memberId)
     .eq("workspace_id", context.workspace.id)
-    .single();
+    .maybeSingle();
 
   if (!targetMember) {
     return { success: false, error: "Member not found" };

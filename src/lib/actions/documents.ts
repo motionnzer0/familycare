@@ -50,7 +50,7 @@ export async function getDocumentSignedUrlAction(
     .eq("id", documentId)
     .eq("workspace_id", context.workspace.id)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !doc) {
     return { success: false, error: "Document not found or access denied" };
@@ -165,7 +165,7 @@ export async function updateDocumentMetadataAction(
     .eq("id", documentId)
     .eq("workspace_id", context.workspace.id)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !currentDoc) {
     return { success: false, error: "Document not found" };

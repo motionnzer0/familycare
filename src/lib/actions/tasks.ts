@@ -120,7 +120,7 @@ export async function updateTaskAction(
     .eq("id", taskId)
     .eq("workspace_id", context.workspace.id)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !currentTask) {
     return { success: false, error: "Task not found" };
@@ -204,7 +204,7 @@ export async function toggleTaskCompleteAction(
     .eq("id", taskId)
     .eq("workspace_id", context.workspace.id)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !currentTask) {
     return { success: false, error: "Task not found" };

@@ -33,7 +33,7 @@ export async function getEmergencyData(workspaceId: string): Promise<EmergencyDa
       .select("*")
       .eq("workspace_id", workspaceId)
       .limit(1)
-      .single(),
+      .maybeSingle(),
     supabase
       .from("emergency_contacts")
       .select("*")
@@ -54,7 +54,7 @@ export async function getEmergencyData(workspaceId: string): Promise<EmergencyDa
       .eq("workspace_id", workspaceId)
       .eq("user_id", info.last_reviewed_by)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (memberData?.display_name) {
       reviewerName = memberData.display_name;
@@ -195,7 +195,7 @@ export async function addEmergencyContactAction(
     .from("emergency_info")
     .select("id")
     .eq("workspace_id", context.workspace.id)
-    .single();
+    .maybeSingle();
 
   if (!info) {
     const { data: newInfo } = await supabase
@@ -386,7 +386,7 @@ export async function markEmergencyReviewedAction(): Promise<ActionResult<{ last
     .from("emergency_info")
     .select("id")
     .eq("workspace_id", context.workspace.id)
-    .single();
+    .maybeSingle();
 
   if (!info) {
     const { data: newInfo } = await supabase

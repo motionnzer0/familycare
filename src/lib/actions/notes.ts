@@ -125,7 +125,7 @@ export async function updateNoteAction(
     .eq("id", noteId)
     .eq("workspace_id", context.workspace.id)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !currentNote) {
     return { success: false, error: "Note not found" };
@@ -191,7 +191,7 @@ export async function deleteNoteAction(noteId: string): Promise<ActionResult> {
     .select("author_id")
     .eq("id", noteId)
     .eq("workspace_id", context.workspace.id)
-    .single();
+    .maybeSingle();
 
   if (!currentNote) return { success: false, error: "Note not found" };
 

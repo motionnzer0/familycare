@@ -202,7 +202,7 @@ export async function setActiveWorkspaceAction(workspaceId: string): Promise<Act
     .eq("workspace_id", workspaceId)
     .eq("user_id", user.id)
     .eq("status", "active")
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     return { success: false, error: "Access to workspace denied" };

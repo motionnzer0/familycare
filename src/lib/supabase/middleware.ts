@@ -67,11 +67,15 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/today") ||
     request.nextUrl.pathname.startsWith("/tasks") ||
     request.nextUrl.pathname.startsWith("/calendar") ||
-    request.nextUrl.pathname.startsWith("/care") ||
+    request.nextUrl.pathname.startsWith("/medications") ||
     request.nextUrl.pathname.startsWith("/documents") ||
+    request.nextUrl.pathname.startsWith("/notes") ||
+    request.nextUrl.pathname.startsWith("/team") ||
+    request.nextUrl.pathname.startsWith("/care") ||
     request.nextUrl.pathname.startsWith("/updates") ||
     request.nextUrl.pathname.startsWith("/emergency") ||
-    request.nextUrl.pathname.startsWith("/settings");
+    request.nextUrl.pathname.startsWith("/settings") ||
+    request.nextUrl.pathname.startsWith("/api/export");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
