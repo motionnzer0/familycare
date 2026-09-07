@@ -23,7 +23,7 @@ Both surfaces operate strictly within the **non-clinical boundary**: they organi
 ## 2. Information Hierarchy & Experience Boundaries
 
 ### 2.1 Care Profile (/care / /settings Care Context)
-1. **Identity & Header Context:** Care recipient preferred name, legal name (optional), relationship/photo (optional), primary location/address.
+1. **Identity & Header Context:** Care recipient preferred name, legal name (optional), relationship/photo (optional), primary location/address, and "Last updated" metadata (backed by `updated_at`).
 2. **Contact & Location:** Primary phone, home address, accessibility/entry notes.
 3. **Care Preferences & Baseline Notes:** Daily routines, communication preferences, personal habits, special family instructions.
 4. **Contextual Navigation:** Seamless cross-links to Emergency Information and Medication reference views.
@@ -47,6 +47,7 @@ Both surfaces operate strictly within the **non-clinical boundary**: they organi
 ### 3.1 Care Profile View & Management
 - **Page Heading (h1):** About {careRecipientName} or Care Profile for {careRecipientName}
 - **Subtitle:** Basic identity, contact details, and care context for {careRecipientName}.
+- **Metadata:** Displays "Last updated: {Date}" based on the existing `care_recipients.updated_at` field (as the care_recipients schema does not contain last_reviewed_at / last_reviewed_by).
 - **Fields:**
   - preferred_name (string, required): Display name used across the workspace.
   - legal_name (string, optional): Full legal name for administrative and medical matching.
@@ -141,12 +142,12 @@ Adheres strictly to Decision D-17 and Row Level Security (RLS):
 ## 7. Acceptance Criteria
 
 1. Authorized users can navigate to Care Profile and Emergency from the navigation rail, mobile navigation, and Today quick reference shortcuts in 2 interactions or fewer.
-2. Care Profile displays care recipient identity, contact details, address, and notes with clean Owner/Coordinator edit flows and Contributor/Viewer read-only states.
+2. Care Profile displays care recipient identity, contact details, address, notes, and "Last updated" metadata with clean Owner/Coordinator edit flows and Contributor/Viewer read-only states.
 3. Emergency Information presents the required safety copy: "For an emergency, call local emergency services." prominently at the top.
 4. Emergency contacts are rendered first with functional tel: call actions and priority ordering.
 5. Preferred hospital/facility details, allergies, conditions, insurance, and emergency notes render clearly with accessible edit controls for authorized roles.
 6. Linked emergency documents can be opened/downloaded securely via signed URLs.
-7. The "Last Reviewed" state accurately shows timestamp and reviewer name, and allows Owner/Coordinator to update the review status.
+7. Emergency Information's "Last Reviewed" state accurately shows timestamp and reviewer name, and allows Owner/Coordinator to update the review status.
 8. Role-based edit restrictions are enforced both in UI visibility and server-side action validation.
 9. Responsive layouts render flawlessly on mobile (<768px), tablet (768px–1024px), and desktop (>1024px) with no horizontal overflow.
 10. All automated test suites, typechecks, linter passes, and production builds succeed with 0 errors.

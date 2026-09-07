@@ -6,7 +6,19 @@ Chronological log of major product, architecture, database, and control mileston
 
 ## [Unreleased] — Checkpoint 1: Product Reconciliation
 
+### 2026-09-07
+- **Care Profile & Emergency Redesign (Slice 3) — Complete:**
+  - Implemented dedicated `/care` Care Profile view and edit experience with live Supabase synchronization and RBAC write protection.
+  - Rebuilt `/emergency` surface prioritizing safety preamble, primary emergency contacts with functional `tel:` dialer links, preferred medical facility, structured family-entered reference details, strictly filtered emergency documents, and "Last reviewed" verification workflow.
+  - Updated navigation rail and settings contextual cross-links.
+  - Reconciled `S3_CARE_PROFILE_EMERGENCY_DESIGN_SPEC.md` to specify "Last updated" metadata on Care Profile while retaining "Last reviewed" verification workflow on Emergency.
+  - Passed full test suite (82 unit tests, clean typecheck, clean lint, clean Next.js build) and verified responsive layouts across Desktop, Tablet, and Mobile.
+
 ### 2026-09-06
+- **Onboarding 3-Screen Redesign (Slice 3) — Complete:**
+  - Implemented streamlined 3-screen progressive onboarding flow (`feat(onboarding)`).
+- **Today Dashboard V2 (Slice 3) — Complete:**
+  - Implemented 4-tier Command Center architecture with + Add action modal and full mobile navigation clearance (`feat(today)`).
 - **Project Control System Established:**
   - Formally established project team governance: Trav (Founder/PO), ChatGPT (Product/UX/Strategy), Antigravity (Engineering).
   - Created canonical control documents: `PROJECT_STATE.md`, `ACTIVE_SPRINT.md`, `HANDOFF_ANTIGRAVITY.md`, and `CHANGELOG.md`.

@@ -12,7 +12,7 @@ The V1 purpose is to provide shared situational awareness without introducing cl
 > "What needs to happen? Who is responsible? What is happening? What changed? Where is the critical information?"
 
 ## Current Phase
-Checkpoint 1 — Product Reconciliation
+Slice 3 — Refinement & Surface Redesigns (Care Profile + Emergency: APPROVED / COMPLETE)
 
 ## Checkpoint Status
 
@@ -20,6 +20,9 @@ Checkpoint 1 — Product Reconciliation
 |---|---|---|
 | Checkpoint 0 | Git / AI Synchronization | **COMPLETE** |
 | Checkpoint 1 | Product Reconciliation | **IN PROGRESS** |
+| - Onboarding Redesign | 3-Screen Progressive Flow | **APPROVED / COMPLETE** |
+| - Today Dashboard V2 | Command Center & Quick Add | **APPROVED / COMPLETE** |
+| - Care Profile + Emergency | Situation Reference & Safety Hub | **APPROVED / COMPLETE** |
 | Checkpoint 2 | Engineering Integrity | **PENDING** |
 | Checkpoint 3 | Security & Data Integrity | **PENDING** |
 | Checkpoint 4 | End-to-End User Journeys | **PENDING** |
@@ -33,17 +36,18 @@ Checkpoint 1 — Product Reconciliation
 
 ### Verified Working V1 Modules
 - **Authentication:** Email/password signup, login, session persistence, logout via Supabase Auth & SSR middleware.
-- **Onboarding:** Progressive disclosure 7-step onboarding wizard.
+- **Onboarding:** Approved 3-screen progressive disclosure onboarding flow.
 - **Workspace Creation:** Automatic workspace provisioning with default timezone and care recipient context.
 - **Workspace Membership:** Multi-user membership management with role-based access control (`owner`, `coordinator`, `contributor`, `viewer`).
-- **Today Dashboard:** Priority 1 (Needs Attention), Priority 2 (Today), Priority 3 (Coming Up), Priority 4 (Recent Changes).
+- **Today Dashboard:** Priority 1 (Needs Attention), Priority 2 (Today), Priority 3 (Coming Up), Priority 4 (Recent Changes), plus universal + Add modal and navigation shortcuts.
+- **Care Profile:** Dedicated `/care` surface for identity, living arrangement, preferences, and "Last updated" metadata with full RBAC protection.
+- **Emergency Information:** Dedicated `/emergency` surface putting safety disclaimers, ordered contacts, preferred facility, family-entered reference data, emergency documents, and "Last reviewed" verification front-and-center.
 - **Tasks:** Task creation, assignment, due date/time scheduling, status toggling, and filtering.
 - **Calendar & Appointments:** Appointment creation, attendee assignment, linked tasks, and chronological agenda.
 - **Medications:** Medication reference list (name, dosage, frequency, instructions, prescriber, pharmacy, active status).
 - **Documents:** Document reference metadata management and secure file links.
 - **Notes:** Categorized reference notes with visibility boundaries.
 - **Care Team:** Member directory, role displays, invitation link generation and acceptance.
-- **Emergency Information:** Emergency contact hierarchy, medical overview, allergies, hospital preferences, and quick-call actions.
 - **Settings:** Workspace configuration, care recipient profile updates, structured data export, and soft deletion.
 - **Timeline / Updates:** Append-only chronological activity feed (`/updates`).
 - **Recent Changes:** Dynamic recent activity feed on `/today` reflecting live mutation events.
