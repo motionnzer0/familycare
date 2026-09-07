@@ -8,17 +8,19 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005",
     trace: "on-first-retry",
   },
+
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], channel: "chrome" },
     },
     {
       name: "mobile",
-      use: { ...devices["Pixel 5"] },
+      use: { ...devices["Pixel 5"], channel: "chrome" },
     },
   ],
+
 });

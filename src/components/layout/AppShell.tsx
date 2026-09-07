@@ -28,7 +28,7 @@ export function AppShell({
         <NavigationRail />
 
         {/* Primary Page Canvas */}
-        <main className="flex-1 px-4 py-6 md:px-8 pb-24 md:pb-12 max-w-app overflow-y-auto">
+        <main className="flex-1 px-4 py-6 md:px-8 pb-36 md:pb-12 max-w-app overflow-y-auto">
           {children}
         </main>
       </div>

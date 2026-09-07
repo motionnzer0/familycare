@@ -47,14 +47,14 @@ export function MobileNav() {
               item.isEmergency && "text-red-700 font-bold",
               isActive
                 ? item.isEmergency
-                  ? "text-red-800 font-bold"
-                  : "text-brand font-bold"
-                : "text-content-muted hover:text-content"
+                  ? "text-red-800 font-bold bg-red-50/80"
+                  : "text-brand font-bold bg-brand-light/30"
+                : "text-content-muted hover:text-content font-medium"
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            <Icon className="h-4 w-4 mb-0.5" />
-            <span>{item.label}</span>
+            <Icon className={cn("h-4 w-4 mb-0.5", isActive ? "text-brand stroke-[2.5]" : "text-content-muted")} />
+            <span className={cn(isActive && "font-bold text-brand")}>{item.label}</span>
           </Link>
         );
       })}

@@ -91,18 +91,18 @@ export function NavigationRail() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors min-h-touch",
+                "flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm transition-colors min-h-touch",
                 item.isEmergency && "text-red-800 hover:bg-red-50",
                 isActive
                   ? item.isEmergency
-                    ? "bg-red-700 text-white shadow-sm"
-                    : "bg-brand text-white shadow-sm"
-                  : "text-content-muted hover:bg-surface hover:text-content"
+                    ? "bg-red-700 text-white shadow-sm font-bold"
+                    : "bg-brand text-white shadow font-bold ring-1 ring-brand/20"
+                  : "text-content hover:bg-surface hover:text-content font-medium"
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="h-5 w-5 shrink-0" />
-              <span>{item.label}</span>
+              <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white stroke-[2.2]" : "text-content-muted")} />
+              <span className={isActive ? "text-white font-bold" : "text-content"}>{item.label}</span>
             </Link>
           );
         })}

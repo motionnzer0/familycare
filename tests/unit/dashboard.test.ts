@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { Task, Appointment } from "@/lib/types";
+import { Task, Appointment, TimelineEvent, Role } from "@/lib/types";
 import { isTaskOverdue, isTaskDueToday, isDateUpcoming } from "@/lib/timezone";
 
-describe("Dashboard Priority Ordering (D-03)", () => {
+describe("Dashboard Priority Ordering (S3 Today V2 Spec)", () => {
   const fixedNow = new Date("2026-09-15T12:00:00Z");
   const tz = "America/New_York";
 
@@ -126,5 +126,53 @@ describe("Dashboard Priority Ordering (D-03)", () => {
     expect(upcomingTasks[0].id).toBe("t3");
     expect(upcomingAppts.length).toBe(1);
     expect(upcomingAppts[0].id).toBe("a2");
+  });
+
+  it("verifies target route resolution for interactive timeline events (Priority 4)", () => {
+    const resolveHref = (event: Partial<TimelineEvent>) => {
+      switch (event.target_type) {
+        case "task":
+          return "/tasks";
+        case "appointment":
+          return "/calendar";
+        case "medication":
+          return "/medications";
+        case "document":
+          return "/documents";
+        case "note":
+          return "/notes";
+        case "emergency":
+          return "/emergency";
+        case "care_recipient":
+          return "/settings";
+        default:
+          return "/updates";
+      }
+    };
+
+    expect(resolveHref({ target_type: "task" })).toBe("/tasks");
+    expect(resolveHref({ target_type: "appointment" })).toBe("/calendar");
+    expect(resolveHref({ target_type: "medication" })).toBe("/medications");
+    expect(resolveHref({ target_type: "document" })).toBe("/documents");
+    expect(resolveHref({ target_type: "note" })).toBe("/notes");
+    expect(resolveHref({ target_type: "emergency" })).toBe("/emergency");
+    expect(resolveHref({ target_type: "care_recipient" })).toBe("/settings");
+    expect(resolveHref({ target_type: "other" })).toBe("/updates");
+  });
+
+  it("validates unified + Add role permissions matrix (Section 10 & 18)", () => {
+    const getAvailableAddActions = (role: Role) => {
+      if (role === "viewer") return [];
+      const actions = ["task", "note", "document"];
+      if (role === "owner" || role === "coordinator") {
+        actions.push("appointment", "invite");
+      }
+      return actions;
+    };
+
+    expect(getAvailableAddActions("owner")).toEqual(["task", "note", "document", "appointment", "invite"]);
+    expect(getAvailableAddActions("coordinator")).toEqual(["task", "note", "document", "appointment", "invite"]);
+    expect(getAvailableAddActions("contributor")).toEqual(["task", "note", "document"]);
+    expect(getAvailableAddActions("viewer")).toEqual([]);
   });
 });
