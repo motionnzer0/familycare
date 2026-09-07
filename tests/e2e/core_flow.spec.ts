@@ -21,35 +21,34 @@ test.describe("Slice 1 — Core Caregiver Flow", () => {
     await expect(page.getByRole("button", { name: "Create Account" })).toBeVisible();
   });
 
-  test("onboarding flow steps are navigatable", async ({ page }) => {
+  test("onboarding 3-screen flow renders, navigates, validates empty inputs, and preserves state on back", async ({ page }) => {
     await page.goto("/onboarding");
 
-    await expect(page.getByRole("heading", { name: "Name your care workspace" })).toBeVisible();
-    await page.fill("#ws-name", "Care for Mom");
-    await page.click("button:has-text('Continue')");
+    // Screen 1: Welcome
+    await expect(page.getByRole("heading", { name: "Let’s get your care space ready." })).toBeVisible();
+    await expect(page.getByText("Family Care keeps your family’s care responsibilities")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Get started" })).toBeVisible();
+    await page.click("button:has-text('Get started')");
 
-    await expect(page.getByRole("heading", { name: "Who is receiving care?" })).toBeVisible();
-    await page.fill("#cr-name", "Mom");
-    await page.click("button:has-text('Continue')");
+    // Screen 2: Create Workspace
+    await expect(page.getByRole("heading", { name: "Who are you caring for?" })).toBeVisible();
+    await expect(page.getByLabel("Workspace name")).toBeVisible();
+    await expect(page.getByLabel("Care recipient preferred name")).toBeVisible();
 
-    // Emergency contact step
-    await expect(page.getByRole("heading", { name: "Primary Emergency Contact" })).toBeVisible();
-    await page.click("button:has-text('Continue')");
+    // Test Empty Input Validation
+    await page.click("button:has-text('Create workspace')");
+    await expect(page.getByText("Please give your care workspace a name.")).toBeVisible();
 
-    // Care team circle step
-    await expect(page.getByRole("heading", { name: "Care Team Circle" })).toBeVisible();
-    await page.click("button:has-text('Continue')");
+    await page.fill("#workspace-name", "Care for Mom");
+    await page.click("button:has-text('Create workspace')");
+    await expect(page.getByText("Please enter your care recipient's preferred name.")).toBeVisible();
 
-    // First task step
-    await expect(page.getByRole("heading", { name: "Add your first task" })).toBeVisible();
-    await page.click("button:has-text('Continue')");
-
-    // First appointment step
-    await expect(page.getByRole("heading", { name: "Add an upcoming appointment" })).toBeVisible();
-    await page.click("button:has-text('Continue')");
-
-    // Ready step
-    await expect(page.getByRole("heading", { name: "You're all set!" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Go to Dashboard" })).toBeVisible();
+    // Test Back button navigation & state preservation
+    await page.click("button:has-text('Back')");
+    await expect(page.getByRole("heading", { name: "Let’s get your care space ready." })).toBeVisible();
+    await page.click("button:has-text('Get started')");
+    await expect(page.locator("#workspace-name")).toHaveValue("Care for Mom");
   });
 });
+
+

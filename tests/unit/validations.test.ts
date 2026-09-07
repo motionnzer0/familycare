@@ -48,6 +48,31 @@ describe("Validation Schemas", () => {
     });
   });
 
+  describe("Onboarding Schemas", () => {
+    it("validates onboarding inputs for workspace and care recipient", async () => {
+      const { onboardingSchema } = await import("@/lib/validations/onboarding");
+      const valid = onboardingSchema.safeParse({
+        workspaceName: "Care for Mom",
+        careRecipientPreferredName: "Mom",
+        timezone: "America/New_York",
+      });
+      expect(valid.success).toBe(true);
+
+      const missingName = onboardingSchema.safeParse({
+        workspaceName: "",
+        careRecipientPreferredName: "Mom",
+      });
+      expect(missingName.success).toBe(false);
+
+      const missingRecipient = onboardingSchema.safeParse({
+        workspaceName: "Care for Mom",
+        careRecipientPreferredName: "",
+      });
+      expect(missingRecipient.success).toBe(false);
+    });
+  });
+
+
   describe("Task Schemas", () => {
     it("validates task title requirement and optional fields", () => {
       const validMin = createTaskSchema.safeParse({
