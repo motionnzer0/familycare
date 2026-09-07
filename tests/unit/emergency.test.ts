@@ -1,16 +1,18 @@
 import { describe, it, expect } from "vitest";
 import {
   EMERGENCY_SAFETY_BANNER_COPY,
+  EMERGENCY_SAFETY_BANNER_SUBTEXT,
   EMERGENCY_FIELD_PREAMBLE_COPY,
   emergencyContactSchema,
   emergencyInfoSchema,
 } from "@/lib/validations/emergency";
 import { checkPermission } from "@/lib/permissions";
 
-describe("Emergency Information & Safety Copy (Phase 2B / D-23)", () => {
+describe("Emergency Information & Safety Copy (Slice 3 / D-23)", () => {
   it("contains exact approved safety copy", () => {
-    expect(EMERGENCY_SAFETY_BANNER_COPY).toContain("For an emergency, call 911 or local emergency services immediately.");
-    expect(EMERGENCY_SAFETY_BANNER_COPY).toContain("does not provide emergency response, medical dispatch, or clinical advice.");
+    expect(EMERGENCY_SAFETY_BANNER_COPY).toBe("For an emergency, call local emergency services.");
+    expect(EMERGENCY_SAFETY_BANNER_SUBTEXT).toContain("This summary is family-entered reference information");
+    expect(EMERGENCY_SAFETY_BANNER_SUBTEXT).toContain("does not replace professional emergency response");
 
     expect(EMERGENCY_FIELD_PREAMBLE_COPY).toContain("All details below are entered and maintained by your family.");
     expect(EMERGENCY_FIELD_PREAMBLE_COPY).toContain("Confirm medical questions with a healthcare professional.");
@@ -31,6 +33,16 @@ describe("Emergency Information & Safety Copy (Phase 2B / D-23)", () => {
       phone: "",
     });
     expect(invalid.success).toBe(false);
+  });
+
+  it("validates emergency info schema", () => {
+    const valid = emergencyInfoSchema.safeParse({
+      preferredHospital: "St. Mary's General",
+      allergiesConditions: "Penicillin allergy",
+      insuranceInfo: "Medicare #12345",
+      additionalNotes: "Lockbox code 1234",
+    });
+    expect(valid.success).toBe(true);
   });
 
   it("enforces emergency permissions (Full Read / Tiered Write - D-17)", () => {

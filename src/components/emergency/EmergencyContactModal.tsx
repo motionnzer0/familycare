@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,16 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { addEmergencyContactAction } from "@/lib/actions/emergency";
+import {
+  addEmergencyContactAction,
+  updateEmergencyContactAction,
+} from "@/lib/actions/emergency";
+import { EmergencyContact } from "@/lib/types";
 
 interface EmergencyContactModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialContact?: EmergencyContact | null;
 }
 
 export function EmergencyContactModal({
   open,
   onOpenChange,
+  initialContact,
 }: EmergencyContactModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,10 +36,25 @@ export function EmergencyContactModal({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (initialContact) {
+      setName(initialContact.name || "");
+      setPhone(initialContact.phone || "");
+      setRelationship(initialContact.relationship || "");
+      setIsPrimary(initialContact.is_primary || false);
+    } else {
+      setName("");
+      setPhone("");
+      setRelationship("");
+      setIsPrimary(false);
+    }
+    setError(null);
+  }, [initialContact, open]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) {
-      setError("Please provide both name and phone number.");
+      setError("Please provide both contact name and phone number.");
       return;
     }
 
@@ -41,24 +62,36 @@ export function EmergencyContactModal({
     setLoading(true);
 
     try {
-      const res = await addEmergencyContactAction({
-        name: name.trim(),
-        phone: phone.trim(),
-        relationship: relationship.trim() || null,
-        isPrimary,
-        sortOrder: isPrimary ? 0 : 1,
-      });
+      if (initialContact) {
+        const res = await updateEmergencyContactAction(initialContact.id, {
+          name: name.trim(),
+          phone: phone.trim(),
+          relationship: relationship.trim() || null,
+          isPrimary,
+          sortOrder: isPrimary ? 0 : initialContact.sort_order || 1,
+        });
 
-      if (!res.success) {
-        setError(res.error || "Failed to add emergency contact");
-        setLoading(false);
-        return;
+        if (!res.success) {
+          setError(res.error || "Failed to update emergency contact");
+          setLoading(false);
+          return;
+        }
+      } else {
+        const res = await addEmergencyContactAction({
+          name: name.trim(),
+          phone: phone.trim(),
+          relationship: relationship.trim() || null,
+          isPrimary,
+          sortOrder: isPrimary ? 0 : 1,
+        });
+
+        if (!res.success) {
+          setError(res.error || "Failed to add emergency contact");
+          setLoading(false);
+          return;
+        }
       }
 
-      setName("");
-      setPhone("");
-      setRelationship("");
-      setIsPrimary(false);
       onOpenChange(false);
     } catch {
       setError("An unexpected error occurred.");
@@ -71,7 +104,9 @@ export function EmergencyContactModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Add Emergency Contact</DialogTitle>
+          <DialogTitle className="text-xl">
+            {initialContact ? "Edit Emergency Contact" : "Add Emergency Contact"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
@@ -125,7 +160,7 @@ export function EmergencyContactModal({
               type="checkbox"
               checked={isPrimary}
               onChange={(e) => setIsPrimary(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-focus"
+              className="h-4 w-4 rounded border-border text-brand focus:ring-focus"
             />
             <Label htmlFor="c-primary" className="font-normal text-sm cursor-pointer">
               Set as Primary Emergency Contact
@@ -141,7 +176,11 @@ export function EmergencyContactModal({
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? "Adding..." : "Add Contact"}
+              {loading
+                ? "Saving..."
+                : initialContact
+                ? "Save Contact"
+                : "Add Contact"}
             </Button>
           </DialogFooter>
         </form>

@@ -84,12 +84,14 @@ export function EmergencyInfoEditModal({
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="e-hospital">Preferred Hospital / Emergency Room</Label>
-            <Input
+            <Label htmlFor="e-hospital">Preferred Hospital / Emergency Facility</Label>
+            <textarea
               id="e-hospital"
-              placeholder="e.g. St. Mary's Medical Center, Downtown Campus"
+              rows={3}
+              placeholder="e.g. St. Mary's Medical Center&#10;1200 Hospital Way, Springfield, IL 62702&#10;Phone: (555) 019-9000&#10;Arrival Notes: Registered with cardiology department."
               value={preferredHospital}
               onChange={(e) => setPreferredHospital(e.target.value)}
+              className="flex w-full rounded border border-border bg-surface px-3 py-2 text-base text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1"
             />
           </div>
 

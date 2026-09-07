@@ -10,12 +10,16 @@ export default async function EmergencyPage() {
     return null;
   }
 
-  const { info, contacts } = await getEmergencyData(context.workspace.id);
+  const { info, contacts, documents, reviewerName } = await getEmergencyData(
+    context.workspace.id
+  );
 
   return (
     <EmergencyView
       info={info}
       contacts={contacts}
+      documents={documents}
+      reviewerName={reviewerName}
       userRole={context.userRole}
       careRecipientName={context.careRecipient?.preferred_name || "Mom"}
       timezone={context.workspace.timezone}

@@ -135,10 +135,18 @@ export function SettingsView({
       <form onSubmit={handleSave}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Workspace &amp; Care Profile</CardTitle>
-            <CardDescription>
-              Basic identity and care context for this family workspace.
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Workspace &amp; Care Profile</CardTitle>
+                <CardDescription>
+                  Basic identity and care context for this family workspace. View full details on the{" "}
+                  <a href="/care" className="text-brand font-semibold underline">
+                    Care Profile page
+                  </a>
+                  .
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-4">

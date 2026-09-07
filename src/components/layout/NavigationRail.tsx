@@ -55,6 +55,11 @@ export const NAVIGATION_ITEMS = [
     icon: Users,
   },
   {
+    label: "Care Profile",
+    href: "/care",
+    icon: Heart,
+  },
+  {
     label: "Updates",
     href: "/updates",
     icon: History,

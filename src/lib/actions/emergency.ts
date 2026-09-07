@@ -12,15 +12,19 @@ import { checkPermission } from "@/lib/permissions";
 import { logTimelineEvent } from "@/lib/timeline";
 import { ActionResult } from "./auth";
 import { getActiveWorkspaceContext } from "./workspace";
-import { EmergencyInfo, EmergencyContact, Role } from "@/lib/types";
+import { EmergencyInfo, EmergencyContact, Document } from "@/lib/types";
 
-/**
- * Fetches emergency information and contacts for the active workspace.
- */
-export async function getEmergencyData(workspaceId: string): Promise<{
+export interface EmergencyData {
   info: EmergencyInfo | null;
   contacts: EmergencyContact[];
-}> {
+  documents: Document[];
+  reviewerName?: string | null;
+}
+
+/**
+ * Fetches emergency information, contacts, and explicitly designated emergency documents for the active workspace.
+ */
+export async function getEmergencyData(workspaceId: string): Promise<EmergencyData> {
   const supabase = await createServerSupabaseClient();
 
   const [infoRes, contactsRes] = await Promise.all([
@@ -34,13 +38,61 @@ export async function getEmergencyData(workspaceId: string): Promise<{
       .from("emergency_contacts")
       .select("*")
       .eq("workspace_id", workspaceId)
+      .order("is_primary", { ascending: false })
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
   ]);
 
+  const info = (infoRes.data as EmergencyInfo) || null;
+  let reviewerName: string | null = null;
+  let documents: Document[] = [];
+
+  if (info?.last_reviewed_by) {
+    const { data: memberData } = await supabase
+      .from("workspace_members")
+      .select("display_name, role")
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", info.last_reviewed_by)
+      .limit(1)
+      .single();
+
+    if (memberData?.display_name) {
+      reviewerName = memberData.display_name;
+    }
+  }
+
+  // Fetch ONLY documents explicitly designated for emergency reference
+  let linkedDocIds: string[] = [];
+  if (info?.id) {
+    const { data: linkRows } = await supabase
+      .from("emergency_document_links")
+      .select("document_id")
+      .eq("emergency_info_id", info.id);
+    if (linkRows) {
+      linkedDocIds = linkRows.map((r) => r.document_id);
+    }
+  }
+
+  let docQuery = supabase
+    .from("documents")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .is("deleted_at", null);
+
+  if (linkedDocIds.length > 0) {
+    docQuery = docQuery.or(`is_emergency_access.eq.true,id.in.(${linkedDocIds.join(",")})`);
+  } else {
+    docQuery = docQuery.eq("is_emergency_access", true);
+  }
+
+  const { data: emergencyDocs } = await docQuery.order("created_at", { ascending: false });
+  documents = (emergencyDocs || []) as Document[];
+
   return {
-    info: (infoRes.data as EmergencyInfo) || null,
+    info,
     contacts: (contactsRes.data || []) as EmergencyContact[],
+    documents,
+    reviewerName,
   };
 }
 
@@ -158,6 +210,13 @@ export async function addEmergencyContactAction(
     return { success: false, error: "Emergency container not initialized" };
   }
 
+  if (parsed.data.isPrimary) {
+    await supabase
+      .from("emergency_contacts")
+      .update({ is_primary: false })
+      .eq("workspace_id", context.workspace.id);
+  }
+
   const { data: contact, error } = await supabase
     .from("emergency_contacts")
     .insert({
@@ -167,7 +226,7 @@ export async function addEmergencyContactAction(
       phone: parsed.data.phone,
       relationship: parsed.data.relationship || null,
       is_primary: parsed.data.isPrimary || false,
-      sort_order: parsed.data.sortOrder || 0,
+      sort_order: parsed.data.sortOrder || (parsed.data.isPrimary ? 0 : 1),
     })
     .select()
     .single();
@@ -180,6 +239,76 @@ export async function addEmergencyContactAction(
     workspaceId: context.workspace.id,
     actorId: user.id,
     action: "created",
+    targetType: "emergency_info",
+    targetId: contact.id,
+    targetTitle: `Emergency Contact: ${contact.name}`,
+  });
+
+  revalidatePath("/emergency");
+  revalidatePath("/today");
+  return { success: true, data: contact as EmergencyContact };
+}
+
+/**
+ * Updates an emergency contact.
+ */
+export async function updateEmergencyContactAction(
+  contactId: string,
+  input: EmergencyContactInput
+): Promise<ActionResult<EmergencyContact>> {
+  const parsed = emergencyContactSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message || "Invalid contact information",
+    };
+  }
+
+  const context = await getActiveWorkspaceContext();
+  if (!context) return { success: false, error: "Active workspace not found" };
+
+  const allowed = checkPermission(context.userRole, "emergency", "update");
+  if (!allowed) {
+    return { success: false, error: "Only coordinators and owners can edit emergency contacts" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Authentication required" };
+
+  if (parsed.data.isPrimary) {
+    await supabase
+      .from("emergency_contacts")
+      .update({ is_primary: false })
+      .eq("workspace_id", context.workspace.id);
+  }
+
+  const { data: contact, error } = await supabase
+    .from("emergency_contacts")
+    .update({
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      relationship: parsed.data.relationship || null,
+      is_primary: parsed.data.isPrimary || false,
+      sort_order: parsed.data.sortOrder || 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", contactId)
+    .eq("workspace_id", context.workspace.id)
+    .select()
+    .single();
+
+  if (error || !contact) {
+    return { success: false, error: error?.message || "Failed to update emergency contact" };
+  }
+
+  await logTimelineEvent(supabase, {
+    workspaceId: context.workspace.id,
+    actorId: user.id,
+    action: "updated",
     targetType: "emergency_info",
     targetId: contact.id,
     targetTitle: `Emergency Contact: ${contact.name}`,
@@ -229,4 +358,68 @@ export async function deleteEmergencyContactAction(contactId: string): Promise<A
   revalidatePath("/emergency");
   revalidatePath("/today");
   return { success: true };
+}
+
+/**
+ * Explicitly marks emergency reference information as reviewed/fresh.
+ * Owner / Coordinator only.
+ */
+export async function markEmergencyReviewedAction(): Promise<ActionResult<{ lastReviewedAt: string }>> {
+  const context = await getActiveWorkspaceContext();
+  if (!context) return { success: false, error: "Active workspace not found" };
+
+  const allowed = checkPermission(context.userRole, "emergency", "update");
+  if (!allowed) {
+    return { success: false, error: "Only coordinators and owners can mark emergency details as reviewed" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Authentication required" };
+
+  const now = new Date().toISOString();
+
+  let { data: info } = await supabase
+    .from("emergency_info")
+    .select("id")
+    .eq("workspace_id", context.workspace.id)
+    .single();
+
+  if (!info) {
+    const { data: newInfo } = await supabase
+      .from("emergency_info")
+      .insert({
+        workspace_id: context.workspace.id,
+        last_reviewed_at: now,
+        last_reviewed_by: user.id,
+      })
+      .select("id")
+      .single();
+    info = newInfo;
+  } else {
+    await supabase
+      .from("emergency_info")
+      .update({
+        last_reviewed_at: now,
+        last_reviewed_by: user.id,
+        updated_at: now,
+      })
+      .eq("workspace_id", context.workspace.id);
+  }
+
+  await logTimelineEvent(supabase, {
+    workspaceId: context.workspace.id,
+    actorId: user.id,
+    action: "reviewed",
+    targetType: "emergency_info",
+    targetId: info?.id || context.workspace.id,
+    targetTitle: "Emergency Reference Verified",
+  });
+
+  revalidatePath("/emergency");
+  revalidatePath("/today");
+  return { success: true, data: { lastReviewedAt: now } };
 }
