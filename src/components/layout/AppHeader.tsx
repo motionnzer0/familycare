@@ -18,7 +18,11 @@ export function AppHeader({
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-surface px-4 md:px-6">
       {/* Left: Active Care Recipient and Workspace Context */}
       <div className="flex items-center space-x-3">
-        <Link href="/today" className="flex items-center space-x-2">
+        <Link
+          href="/today"
+          aria-label={`Care workspace for ${careRecipientName}`}
+          className="flex items-center space-x-2.5 py-1 px-1.5 -ml-1.5 rounded-lg hover:bg-surface-subtle transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white shadow-sm">
             <Heart className="h-5 w-5 fill-current" />
           </div>

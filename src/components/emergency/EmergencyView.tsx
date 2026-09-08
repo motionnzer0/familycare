@@ -205,10 +205,11 @@ export function EmergencyView({
                 <a
                   href={`tel:${c.phone}`}
                   aria-label={`Call ${c.name} at ${c.phone}`}
-                  className="inline-flex items-center justify-center space-x-2 w-full sm:w-auto rounded-lg bg-brand-light/60 hover:bg-brand-light text-brand px-3.5 py-2 text-sm font-bold transition-colors min-h-touch border border-brand/20"
+                  className="inline-flex items-center justify-center space-x-2.5 w-full rounded-lg bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white px-4 py-2.5 text-sm font-bold shadow-sm transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                 >
-                  <Phone className="h-4 w-4 shrink-0 stroke-[2.2]" />
-                  <span>Call {c.name.split(" ")[0]} ({c.phone})</span>
+                  <Phone className="h-4 w-4 shrink-0 stroke-[2.5]" />
+                  <span>Call {c.name}</span>
+                  <span className="text-emerald-100 font-normal text-xs ml-1">({c.phone})</span>
                 </a>
               </div>
 
@@ -240,7 +241,7 @@ export function EmergencyView({
 
           {contacts.length === 0 && (
             <div className="sm:col-span-2 rounded-xl border border-dashed border-border p-6 text-center text-sm text-content-muted bg-surface-subtle space-y-2">
-              <p>No emergency contacts listed yet.</p>
+              <p>No emergency contacts recorded yet.</p>
               {canEdit && (
                 <Button
                   variant="outline"
@@ -283,7 +284,7 @@ export function EmergencyView({
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-sm font-medium text-content whitespace-pre-wrap">
-              {info?.preferred_hospital || "Not specified yet"}
+              {info?.preferred_hospital || "No hospital preference recorded yet"}
             </p>
           </CardContent>
         </Card>
@@ -317,7 +318,7 @@ export function EmergencyView({
             </CardHeader>
             <CardContent>
               <p className="text-sm font-medium text-content whitespace-pre-wrap">
-                {info?.allergies_conditions || "None listed"}
+                {info?.allergies_conditions || "No known allergies or conditions recorded"}
               </p>
             </CardContent>
           </Card>
@@ -342,7 +343,7 @@ export function EmergencyView({
             </CardHeader>
             <CardContent>
               <p className="text-sm text-content whitespace-pre-wrap">
-                {info?.insurance_info || "No insurance details entered"}
+                {info?.insurance_info || "No insurance details recorded"}
               </p>
             </CardContent>
           </Card>
@@ -367,7 +368,7 @@ export function EmergencyView({
             </CardHeader>
             <CardContent>
               <p className="text-sm text-content whitespace-pre-wrap">
-                {info?.additional_notes || "No access notes provided"}
+                {info?.additional_notes || "No home access or special notes recorded"}
               </p>
             </CardContent>
           </Card>

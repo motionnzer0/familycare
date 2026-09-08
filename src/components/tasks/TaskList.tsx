@@ -75,7 +75,8 @@ export function TaskList({
       <div className="flex items-center space-x-2 border-b border-border pb-2 text-sm font-medium">
         <button
           onClick={() => setActiveFilter("open")}
-          className={`px-3 py-1.5 rounded transition-colors ${
+          aria-pressed={activeFilter === "open"}
+          className={`px-3.5 py-2 min-h-[38px] sm:min-h-[34px] rounded-md transition-colors text-xs sm:text-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
             activeFilter === "open"
               ? "bg-slate-900 text-white font-semibold"
               : "text-content-muted hover:text-content"
@@ -85,7 +86,8 @@ export function TaskList({
         </button>
         <button
           onClick={() => setActiveFilter("completed")}
-          className={`px-3 py-1.5 rounded transition-colors ${
+          aria-pressed={activeFilter === "completed"}
+          className={`px-3.5 py-2 min-h-[38px] sm:min-h-[34px] rounded-md transition-colors text-xs sm:text-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
             activeFilter === "completed"
               ? "bg-slate-900 text-white font-semibold"
               : "text-content-muted hover:text-content"
@@ -95,7 +97,8 @@ export function TaskList({
         </button>
         <button
           onClick={() => setActiveFilter("all")}
-          className={`px-3 py-1.5 rounded transition-colors ${
+          aria-pressed={activeFilter === "all"}
+          className={`px-3.5 py-2 min-h-[38px] sm:min-h-[34px] rounded-md transition-colors text-xs sm:text-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
             activeFilter === "all"
               ? "bg-slate-900 text-white font-semibold"
               : "text-content-muted hover:text-content"

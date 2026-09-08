@@ -132,7 +132,7 @@ export function CareProfileView({
                 Legal Name
               </span>
               <p className="text-sm font-medium text-content">
-                {careRecipient?.legal_name || "Not specified"}
+                {careRecipient?.legal_name || "Not recorded"}
               </p>
             </div>
 
@@ -150,7 +150,7 @@ export function CareProfileView({
                       {age !== null && <span className="text-content-muted"> ({age} years old)</span>}
                     </>
                   ) : (
-                    "Not specified"
+                    "Not recorded"
                   )}
                 </span>
               </p>

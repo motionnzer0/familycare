@@ -35,7 +35,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Task, Appointment, TimelineEvent } from "@/lib/types";
-import { formatInWorkspaceTz } from "@/lib/timezone";
+import { formatInWorkspaceTz, formatRelativeTimeInWorkspaceTz } from "@/lib/timezone";
 
 interface TodayDashboardProps {
   data: DashboardData;
@@ -373,8 +373,11 @@ export function TodayDashboard({
                       {event.target_title || event.target_id}
                     </span>
                   </div>
-                  <span className="text-content-subtle shrink-0">
-                    {formatInWorkspaceTz(event.created_at, timezone, "MMM d, h:mm a")}
+                  <span
+                    className="text-content-subtle shrink-0"
+                    title={formatInWorkspaceTz(event.created_at, timezone, "MMM d, yyyy 'at' h:mm a")}
+                  >
+                    {formatRelativeTimeInWorkspaceTz(event.created_at, timezone)}
                   </span>
                 </Link>
               );

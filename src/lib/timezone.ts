@@ -79,3 +79,37 @@ export function formatInWorkspaceTz(
   const parsed = typeof date === "string" ? parseISO(date) : date;
   return formatInTimeZone(parsed, timezone, formatStr);
 }
+
+/**
+ * Formats an activity timestamp with relative display for events within 24 hours,
+ * falling back to formatted workspace date/time for older events.
+ */
+export function formatRelativeTimeInWorkspaceTz(
+  date: Date | string,
+  timezone: string = DEFAULT_WORKSPACE_TIMEZONE,
+  now: Date = new Date()
+): string {
+  const parsed = typeof date === "string" ? parseISO(date) : date;
+  const nowZoned = toZonedTime(now, timezone);
+  const targetZoned = toZonedTime(parsed, timezone);
+  const diffMs = nowZoned.getTime() - targetZoned.getTime();
+
+  if (diffMs < 0) {
+    return formatInTimeZone(parsed, timezone, "MMM d, h:mm a");
+  }
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffMinutes < 1) {
+    return "Just now";
+  }
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+
+  return formatInTimeZone(parsed, timezone, "MMM d, h:mm a");
+}

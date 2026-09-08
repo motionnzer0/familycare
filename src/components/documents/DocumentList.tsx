@@ -69,7 +69,7 @@ export function DocumentList({
       </div>
 
       {/* Category Pills */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3 text-sm font-medium">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3 text-sm font-medium">
         {categories.map((cat) => {
           const count =
             cat === "All"
@@ -80,7 +80,8 @@ export function DocumentList({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              aria-pressed={activeCategory === cat}
+              className={`px-3.5 py-1.5 min-h-[36px] sm:min-h-[32px] rounded-full text-xs font-semibold transition-colors flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 activeCategory === cat
                   ? "bg-slate-900 text-white"
                   : "bg-surface text-content-muted hover:bg-surface-subtle border border-border"
@@ -111,13 +112,17 @@ export function DocumentList({
               <FolderOpen className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="font-semibold text-content">No documents in this category</p>
-              <p className="text-sm text-content-muted">
-                Upload insurance cards, power of attorney, or recent clinic summaries.
+              <p className="font-semibold text-content">
+                {activeCategory === "All" ? "No documents uploaded yet" : "No documents in this category"}
+              </p>
+              <p className="text-xs text-content-muted max-w-sm mx-auto leading-relaxed">
+                {activeCategory === "All"
+                  ? "Keep medical records, insurance cards, and advance directives safe in one place. Supports PDF, PNG, and JPG files up to 25MB."
+                  : "Upload insurance cards, power of attorney, or recent clinic summaries."}
               </p>
             </div>
             {canUpload && (
-              <Button variant="secondary" size="sm" onClick={() => setUploadModalOpen(true)}>
+              <Button variant="secondary" size="sm" onClick={() => setUploadModalOpen(true)} className="min-h-[36px]">
                 Upload a document
               </Button>
             )}

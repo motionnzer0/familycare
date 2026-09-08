@@ -89,7 +89,7 @@ export default function LoginPage() {
         Don&apos;t have an account yet?{" "}
         <Link
           href="/register"
-          className="font-semibold text-brand hover:underline"
+          className="inline-flex items-center font-semibold text-brand hover:underline py-2 px-1 min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded"
         >
           Create one
         </Link>

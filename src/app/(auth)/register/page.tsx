@@ -102,7 +102,7 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-semibold text-brand hover:underline"
+          className="inline-flex items-center font-semibold text-brand hover:underline py-2 px-1 min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded"
         >
           Sign in
         </Link>

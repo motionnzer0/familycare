@@ -262,33 +262,35 @@ export function SettingsView({
 
       {/* 3. DANGER ZONE: WORKSPACE SOFT DELETION (D-21) */}
       {isOwner && (
-        <Card className="border-red-300 bg-red-50/30">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <ShieldAlert className="h-5 w-5 text-red-600" />
-              <CardTitle className="text-lg text-red-950">Danger Zone</CardTitle>
-            </div>
-            <CardDescription className="text-red-900">
-              Delete this workspace. Access is immediately revoked for all team members. Data is retained in a 30-day quarantine before permanent purge.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button
-              type="button"
-              variant="danger"
-              disabled={isPending}
-              onClick={() => {
-                setDeleteConfirmationInput("");
-                setDeleteError(null);
-                setDeleteDialogOpen(true);
-              }}
-              className="flex items-center space-x-2 min-h-[44px] sm:min-h-[36px]"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>Delete Workspace</span>
-            </Button>
-          </CardFooter>
-        </Card>
+        <div className="pt-8 border-t border-border mt-10">
+          <Card className="border-red-300 bg-red-50/30">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <ShieldAlert className="h-5 w-5 text-red-600" />
+                <CardTitle className="text-lg text-red-950">Danger Zone</CardTitle>
+              </div>
+              <CardDescription className="text-red-900">
+                Delete this workspace. Access is immediately revoked for all team members. Data is retained in a 30-day quarantine before permanent purge.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button
+                type="button"
+                variant="danger"
+                disabled={isPending}
+                onClick={() => {
+                  setDeleteConfirmationInput("");
+                  setDeleteError(null);
+                  setDeleteDialogOpen(true);
+                }}
+                className="flex items-center space-x-2 min-h-[44px] sm:min-h-[36px]"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete Workspace</span>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       )}
 
       {/* Accessible Workspace Deletion Modal */}

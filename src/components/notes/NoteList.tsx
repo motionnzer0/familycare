@@ -72,7 +72,7 @@ export function NoteList({
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3 text-sm font-medium">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3 text-sm font-medium">
         {categories.map((cat) => {
           const count =
             cat === "All"
@@ -83,7 +83,8 @@ export function NoteList({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              aria-pressed={activeCategory === cat}
+              className={`px-3.5 py-1.5 min-h-[36px] sm:min-h-[32px] rounded-full text-xs font-semibold transition-colors flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 activeCategory === cat
                   ? "bg-slate-900 text-white"
                   : "bg-surface text-content-muted hover:bg-surface-subtle border border-border"
