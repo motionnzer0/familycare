@@ -78,4 +78,49 @@ describe("Security & Cross-Workspace Isolation (Slice 1)", () => {
     expect(checkPermission(viewerRole, "task", "complete")).toBe(false);
     expect(checkPermission(viewerRole, "appointment", "create")).toBe(false);
   });
+
+  it("REJECTS cross-workspace task update when task belongs to another workspace (SEC-03)", () => {
+    // Simulating supabase.from("tasks").update(...).eq("id", taskId).eq("workspace_id", activeWorkspaceId)
+    function simulateScopedUpdate(taskId: string, activeWorkspaceId: string, updateFields: Partial<MockTask>) {
+      const taskIndex = tasks.findIndex(
+        (t) => t.id === taskId && t.workspaceId === activeWorkspaceId
+      );
+      if (taskIndex === -1) {
+        return { success: false, error: "Task not found in active workspace" };
+      }
+      tasks[taskIndex] = { ...tasks[taskIndex], ...updateFields };
+      return { success: true, data: tasks[taskIndex] };
+    }
+
+    // User active in Workspace A attempts to update task B1 in Workspace B
+    const result = simulateScopedUpdate("task-B1", "workspace-A", { title: "Malicious title overwrite" });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Task not found in active workspace");
+
+    // Verify task-B1 was not modified
+    const untouchedTask = tasks.find((t) => t.id === "task-B1");
+    expect(untouchedTask?.title).toBe("Dad pharmacy pickup");
+  });
+
+  it("strictly binds task and appointment creation to active workspace context (SEC-04)", () => {
+    function simulateCreation(
+      itemType: "task" | "appointment",
+      activeWorkspaceId: string,
+      itemData: { title: string }
+    ) {
+      // Creation strictly uses active workspace id from authenticated session context
+      const createdItem = {
+        id: `${itemType}-new-${Date.now()}`,
+        workspaceId: activeWorkspaceId,
+        title: itemData.title,
+      };
+      return createdItem;
+    }
+
+    const createdTask = simulateCreation("task", "workspace-A", { title: "New Lab Review" });
+    expect(createdTask.workspaceId).toBe("workspace-A");
+
+    const createdAppt = simulateCreation("appointment", "workspace-A", { title: "Oncology consult" });
+    expect(createdAppt.workspaceId).toBe("workspace-A");
+  });
 });

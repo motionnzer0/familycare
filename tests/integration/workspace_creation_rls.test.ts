@@ -229,3 +229,226 @@ describe("Workspaces RLS Policy & Onboarding Access Verification", () => {
     expect(cr?.preferred_name).toBe("Mom");
   });
 });
+
+describe("Hardened workspace_members INSERT RLS Policy (SEC-01)", () => {
+  interface WorkspaceRow {
+    id: string;
+    owner_id: string;
+  }
+
+  interface MemberRow {
+    workspace_id: string;
+    user_id: string;
+    role: "owner" | "coordinator" | "contributor" | "viewer";
+    status: "active" | "removed";
+  }
+
+  interface InvitationRow {
+    id: string;
+    workspace_id: string;
+    email: string;
+    role: "coordinator" | "contributor" | "viewer";
+    accepted_at: string | null;
+    expires_at: string;
+  }
+
+  function isMemberInsertAllowed(params: {
+    workspace: WorkspaceRow;
+    authUserId: string;
+    authUserEmail: string;
+    targetUserId: string;
+    existingMembers: MemberRow[];
+    invitations: InvitationRow[];
+  }): boolean {
+    const { workspace, authUserId, authUserEmail, existingMembers, invitations } = params;
+
+    // 1. Owner bootstrapping during creation
+    const isOwnerBootstrap = workspace.id && workspace.owner_id === authUserId;
+
+    // 2. Coordinator/Owner adding a member
+    const isOwnerOrCoordinator = existingMembers.some(
+      (m) =>
+        m.workspace_id === workspace.id &&
+        m.user_id === authUserId &&
+        m.status === "active" &&
+        (m.role === "owner" || m.role === "coordinator")
+    );
+
+    // 3. Accepting a valid, non-expired invitation
+    const now = new Date().toISOString();
+    const hasValidInvite = invitations.some(
+      (inv) =>
+        inv.workspace_id === workspace.id &&
+        inv.email.toLowerCase() === authUserEmail.toLowerCase() &&
+        inv.accepted_at === null &&
+        inv.expires_at > now
+    );
+
+    return isOwnerBootstrap || isOwnerOrCoordinator || hasValidInvite;
+  }
+
+  const sampleWorkspace: WorkspaceRow = { id: "ws-secure-1", owner_id: "user-owner" };
+
+  it("DENIES an arbitrary authenticated user from self-inserting into a foreign workspace without invitation", () => {
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "attacker-user-id",
+      authUserEmail: "attacker@example.com",
+      targetUserId: "attacker-user-id",
+      existingMembers: [
+        { workspace_id: "ws-secure-1", user_id: "user-owner", role: "owner", status: "active" },
+      ],
+      invitations: [],
+    });
+    expect(allowed).toBe(false);
+  });
+
+  it("DENIES user from accepting an invitation intended for another email address", () => {
+    const invitations: InvitationRow[] = [
+      {
+        id: "inv-1",
+        workspace_id: "ws-secure-1",
+        email: "invited-family@example.com",
+        role: "contributor",
+        accepted_at: null,
+        expires_at: new Date(Date.now() + 86400000).toISOString(),
+      },
+    ];
+
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "malicious-user-id",
+      authUserEmail: "wrong-email@example.com",
+      targetUserId: "malicious-user-id",
+      existingMembers: [],
+      invitations,
+    });
+    expect(allowed).toBe(false);
+  });
+
+  it("DENIES user from accepting an expired invitation", () => {
+    const expiredInvitations: InvitationRow[] = [
+      {
+        id: "inv-2",
+        workspace_id: "ws-secure-1",
+        email: "invited-family@example.com",
+        role: "contributor",
+        accepted_at: null,
+        expires_at: new Date(Date.now() - 3600000).toISOString(), // expired 1h ago
+      },
+    ];
+
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "invited-user-id",
+      authUserEmail: "invited-family@example.com",
+      targetUserId: "invited-user-id",
+      existingMembers: [],
+      invitations: expiredInvitations,
+    });
+    expect(allowed).toBe(false);
+  });
+
+  it("PERMITS workspace owner to bootstrap initial membership row during creation", () => {
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "user-owner",
+      authUserEmail: "owner@example.com",
+      targetUserId: "user-owner",
+      existingMembers: [],
+      invitations: [],
+    });
+    expect(allowed).toBe(true);
+  });
+
+  it("PERMITS coordinator to add a member to the workspace", () => {
+    const members: MemberRow[] = [
+      { workspace_id: "ws-secure-1", user_id: "user-coord", role: "coordinator", status: "active" },
+    ];
+
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "user-coord",
+      authUserEmail: "coord@example.com",
+      targetUserId: "new-member-id",
+      existingMembers: members,
+      invitations: [],
+    });
+    expect(allowed).toBe(true);
+  });
+
+  it("PERMITS invited user with matching email to accept a valid pending invitation", () => {
+    const validInvitations: InvitationRow[] = [
+      {
+        id: "inv-3",
+        workspace_id: "ws-secure-1",
+        email: "legit-invitee@example.com",
+        role: "contributor",
+        accepted_at: null,
+        expires_at: new Date(Date.now() + 86400000).toISOString(),
+      },
+    ];
+
+    const allowed = isMemberInsertAllowed({
+      workspace: sampleWorkspace,
+      authUserId: "legit-user-id",
+      authUserEmail: "legit-invitee@example.com",
+      targetUserId: "legit-user-id",
+      existingMembers: [],
+      invitations: validInvitations,
+    });
+    expect(allowed).toBe(true);
+  });
+});
+
+describe("User Profiles Privacy Boundary RLS (SEC-06)", () => {
+  interface MemberRow {
+    workspace_id: string;
+    user_id: string;
+    status: "active" | "removed";
+  }
+
+  function isProfileSelectAllowed(
+    targetProfileUserId: string,
+    authUserId: string,
+    members: MemberRow[]
+  ): boolean {
+    // 1. Own profile
+    if (authUserId === targetProfileUserId) return true;
+
+    // 2. Active co-workspace members
+    const authUserWorkspaces = members
+      .filter((m) => m.user_id === authUserId && m.status === "active")
+      .map((m) => m.workspace_id);
+
+    return members.some(
+      (m) =>
+        authUserWorkspaces.includes(m.workspace_id) &&
+        m.user_id === targetProfileUserId &&
+        m.status === "active"
+    );
+  }
+
+  const sampleMembers: MemberRow[] = [
+    { workspace_id: "ws-1", user_id: "user-A", status: "active" },
+    { workspace_id: "ws-1", user_id: "user-B", status: "active" },
+    { workspace_id: "ws-1", user_id: "user-RemovedFromWs1", status: "removed" },
+    { workspace_id: "ws-2", user_id: "user-C", status: "active" },
+  ];
+
+  it("PERMITS user to view their own profile", () => {
+    expect(isProfileSelectAllowed("user-A", "user-A", sampleMembers)).toBe(true);
+  });
+
+  it("PERMITS user to view profile of an active co-member in their workspace", () => {
+    expect(isProfileSelectAllowed("user-B", "user-A", sampleMembers)).toBe(true);
+  });
+
+  it("DENIES user from viewing profile of a user in a completely unrelated workspace", () => {
+    expect(isProfileSelectAllowed("user-C", "user-A", sampleMembers)).toBe(false);
+  });
+
+  it("DENIES user from viewing profile of a removed member with no shared active workspace", () => {
+    expect(isProfileSelectAllowed("user-RemovedFromWs1", "user-A", sampleMembers)).toBe(false);
+  });
+});

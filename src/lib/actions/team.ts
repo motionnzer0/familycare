@@ -56,7 +56,7 @@ export async function inviteMemberAction(
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: invitation, error } = await supabase
-    .from("workspace_invitations")
+    .from("invitations")
     .insert({
       workspace_id: context.workspace.id,
       email,
@@ -110,7 +110,7 @@ export async function acceptInvitationAction(
 
   // 1. Fetch pending invitation
   const { data: invitation, error } = await supabase
-    .from("workspace_invitations")
+    .from("invitations")
     .select("*, workspaces(*)")
     .eq("token", token)
     .eq("status", "pending")
@@ -138,7 +138,7 @@ export async function acceptInvitationAction(
     if (existingMember.status === "active") {
       // Already active, just mark invitation accepted
       await supabase
-        .from("workspace_invitations")
+        .from("invitations")
         .update({ status: "accepted", accepted_at: new Date().toISOString() })
         .eq("id", invitation.id);
 
@@ -173,7 +173,7 @@ export async function acceptInvitationAction(
 
   // 3. Mark invitation accepted
   await supabase
-    .from("workspace_invitations")
+    .from("invitations")
     .update({ status: "accepted", accepted_at: new Date().toISOString() })
     .eq("id", invitation.id);
 
@@ -340,7 +340,7 @@ export async function getWorkspaceTeam(workspaceId: string): Promise<{
       .eq("status", "active")
       .order("joined_at", { ascending: true }),
     supabase
-      .from("workspace_invitations")
+      .from("invitations")
       .select("*")
       .eq("workspace_id", workspaceId)
       .eq("status", "pending")

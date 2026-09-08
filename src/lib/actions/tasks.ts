@@ -23,8 +23,7 @@ export interface UpdateTaskInput {
  * Creates a new task in the active workspace.
  */
 export async function createTaskAction(
-  input: CreateTaskInput,
-  targetWorkspaceId?: string
+  input: CreateTaskInput
 ): Promise<ActionResult<Task>> {
   const parsed = createTaskSchema.safeParse(input);
   if (!parsed.success) {
@@ -39,7 +38,7 @@ export async function createTaskAction(
     return { success: false, error: "Active workspace not found" };
   }
 
-  const workspaceId = targetWorkspaceId || context.workspace.id;
+  const workspaceId = context.workspace.id;
 
   // Authorization check
   const allowed = checkPermission(context.userRole, "task", "create");
@@ -156,6 +155,7 @@ export async function updateTaskAction(
     .from("tasks")
     .update(updateData)
     .eq("id", taskId)
+    .eq("workspace_id", context.workspace.id)
     .select()
     .single();
 
@@ -232,6 +232,7 @@ export async function toggleTaskCompleteAction(
       updated_at: new Date().toISOString(),
     })
     .eq("id", taskId)
+    .eq("workspace_id", context.workspace.id)
     .select()
     .single();
 

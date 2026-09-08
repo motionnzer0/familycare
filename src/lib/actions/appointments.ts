@@ -17,8 +17,7 @@ import { Appointment, AppointmentStatus } from "@/lib/types";
  * Creates a new appointment in the active workspace.
  */
 export async function createAppointmentAction(
-  input: CreateAppointmentInput,
-  targetWorkspaceId?: string
+  input: CreateAppointmentInput
 ): Promise<ActionResult<Appointment>> {
   const parsed = createAppointmentSchema.safeParse(input);
   if (!parsed.success) {
@@ -33,7 +32,7 @@ export async function createAppointmentAction(
     return { success: false, error: "Active workspace not found" };
   }
 
-  const workspaceId = targetWorkspaceId || context.workspace.id;
+  const workspaceId = context.workspace.id;
 
   const allowed = checkPermission(context.userRole, "appointment", "create");
   if (!allowed) {

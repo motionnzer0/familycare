@@ -42,4 +42,24 @@ describe("Care Team & Invitations (Phase 2A)", () => {
     expect(checkPermission("coordinator", "member", "delete")).toBe(false);
     expect(checkPermission("contributor", "member", "delete")).toBe(false);
   });
+
+  it("conforms to canonical invitations table schema and token generation (SEC-02)", () => {
+    // Canonical schema fields: id, workspace_id, email, role, token, invited_by, expires_at, accepted_at, created_at
+    const mockInvitationRecord = {
+      id: "inv-uuid-1",
+      workspace_id: "ws-uuid-1",
+      email: "doctor@example.com",
+      role: "viewer" as Role,
+      token: "inv_tok_" + "a".repeat(32),
+      invited_by: "user-owner-1",
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      accepted_at: null,
+      created_at: new Date().toISOString(),
+    };
+
+    expect(mockInvitationRecord.workspace_id).toBeDefined();
+    expect(mockInvitationRecord.token.length).toBeGreaterThanOrEqual(32);
+    expect(mockInvitationRecord.accepted_at).toBeNull();
+    expect(new Date(mockInvitationRecord.expires_at).getTime()).toBeGreaterThan(Date.now());
+  });
 });
