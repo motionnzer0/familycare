@@ -32,7 +32,12 @@ export async function getWorkspaceMedications(workspaceId: string): Promise<Medi
     return [];
   }
 
-  return (data || []) as Medication[];
+  return (data || []).map((row) => ({
+    ...row,
+    dosage: row.form_strength || row.dosage || null,
+    prescribing_provider: row.prescriber_pharmacy || row.prescribing_provider || null,
+    notes: row.note || row.notes || null,
+  })) as Medication[];
 }
 
 /**
@@ -64,20 +69,21 @@ export async function createMedicationAction(
 
   if (!user) return { success: false, error: "Authentication required" };
 
+  const dbStatus =
+    parsed.data.status === "archived" || parsed.data.status === "discontinued"
+      ? "archived"
+      : "active";
+
   const { data: med, error } = await supabase
     .from("medications")
     .insert({
       workspace_id: context.workspace.id,
       name: parsed.data.name,
-      dosage: parsed.data.dosage || null,
-      instructions: parsed.data.instructions || null,
-      frequency: parsed.data.frequency || null,
-      schedule: parsed.data.schedule || null,
-      prescribing_provider: parsed.data.prescribingProvider || null,
-      start_date: parsed.data.startDate || null,
-      end_date: parsed.data.endDate || null,
-      notes: parsed.data.notes || null,
-      status: parsed.data.status || "active",
+      form_strength: parsed.data.dosage || null,
+      instructions: parsed.data.instructions || (parsed.data.frequency ? `${parsed.data.frequency}${parsed.data.schedule ? ` (${parsed.data.schedule})` : ""}` : null),
+      prescriber_pharmacy: parsed.data.prescribingProvider || null,
+      note: parsed.data.notes || null,
+      status: dbStatus,
       created_by: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -89,18 +95,25 @@ export async function createMedicationAction(
     return { success: false, error: error?.message || "Failed to create medication record" };
   }
 
+  const mappedMed: Medication = {
+    ...med,
+    dosage: med.form_strength,
+    prescribing_provider: med.prescriber_pharmacy,
+    notes: med.note,
+  };
+
   await logTimelineEvent(supabase, {
     workspaceId: context.workspace.id,
     actorId: user.id,
     action: "created",
     targetType: "medication",
     targetId: med.id,
-    targetTitle: `${med.name} (${med.dosage || "standard"})`,
+    targetTitle: `${med.name} (${mappedMed.dosage || "standard"})`,
   });
 
   revalidatePath("/medications");
   revalidatePath("/today");
-  return { success: true, data: med as Medication };
+  return { success: true, data: mappedMed };
 }
 
 /**
@@ -130,15 +143,14 @@ export async function updateMedicationAction(
   };
 
   if (input.name !== undefined) updateData.name = input.name;
-  if (input.dosage !== undefined) updateData.dosage = input.dosage;
+  if (input.dosage !== undefined) updateData.form_strength = input.dosage;
   if (input.instructions !== undefined) updateData.instructions = input.instructions;
-  if (input.frequency !== undefined) updateData.frequency = input.frequency;
-  if (input.schedule !== undefined) updateData.schedule = input.schedule;
-  if (input.prescribingProvider !== undefined) updateData.prescribing_provider = input.prescribingProvider;
-  if (input.startDate !== undefined) updateData.start_date = input.startDate;
-  if (input.endDate !== undefined) updateData.end_date = input.endDate;
-  if (input.notes !== undefined) updateData.notes = input.notes;
-  if (input.status !== undefined) updateData.status = input.status;
+  if (input.prescribingProvider !== undefined) updateData.prescriber_pharmacy = input.prescribingProvider;
+  if (input.notes !== undefined) updateData.note = input.notes;
+  if (input.status !== undefined) {
+    updateData.status =
+      input.status === "archived" || input.status === "discontinued" ? "archived" : "active";
+  }
 
   const { data: updated, error } = await supabase
     .from("medications")
@@ -152,6 +164,13 @@ export async function updateMedicationAction(
     return { success: false, error: error?.message || "Failed to update medication" };
   }
 
+  const mappedMed: Medication = {
+    ...updated,
+    dosage: updated.form_strength,
+    prescribing_provider: updated.prescriber_pharmacy,
+    notes: updated.note,
+  };
+
   await logTimelineEvent(supabase, {
     workspaceId: context.workspace.id,
     actorId: user.id,
@@ -163,7 +182,7 @@ export async function updateMedicationAction(
 
   revalidatePath("/medications");
   revalidatePath("/today");
-  return { success: true, data: updated as Medication };
+  return { success: true, data: mappedMed };
 }
 
 /**

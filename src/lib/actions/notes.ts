@@ -31,7 +31,20 @@ export async function getWorkspaceNotes(workspaceId: string): Promise<Note[]> {
     return [];
   }
 
-  return (data || []) as Note[];
+  return (data || []).map((row) => {
+    let category = "General";
+    let title = row.title || "";
+    const match = title.match(/^\[(General|Appointment|Family|Care|Other)\]\s*(.*)$/i);
+    if (match) {
+      category = match[1];
+      title = match[2];
+    }
+    return {
+      ...row,
+      title: title || row.title,
+      category,
+    };
+  }) as Note[];
 }
 
 /**
@@ -63,15 +76,16 @@ export async function createNoteAction(
 
   if (!user) return { success: false, error: "Authentication required" };
 
+  const rawCategory = parsed.data.category || "General";
+  const rawTitle = parsed.data.title.replace(/^\[[^\]]+\]\s*/, "").trim();
+  const dbTitle = rawCategory && rawCategory !== "General" ? `[${rawCategory}] ${rawTitle}` : rawTitle;
+
   const { data: note, error } = await supabase
     .from("notes")
     .insert({
       workspace_id: context.workspace.id,
-      title: parsed.data.title,
+      title: dbTitle,
       body: parsed.data.body,
-      category: parsed.data.category || "General",
-      related_appointment_id: parsed.data.relatedAppointmentId || null,
-      related_task_id: parsed.data.relatedTaskId || null,
       author_id: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -83,18 +97,24 @@ export async function createNoteAction(
     return { success: false, error: error?.message || "Failed to create note" };
   }
 
+  const mappedNote: Note = {
+    ...note,
+    title: rawTitle,
+    category: rawCategory,
+  };
+
   await logTimelineEvent(supabase, {
     workspaceId: context.workspace.id,
     actorId: user.id,
     action: "created",
     targetType: "note",
     targetId: note.id,
-    targetTitle: note.title,
+    targetTitle: mappedNote.title,
   });
 
   revalidatePath("/notes");
   revalidatePath("/today");
-  return { success: true, data: note as Note };
+  return { success: true, data: mappedNote };
 }
 
 /**
@@ -142,11 +162,20 @@ export async function updateNoteAction(
     updated_at: new Date().toISOString(),
   };
 
-  if (input.title !== undefined) updateData.title = input.title;
+  if (input.title !== undefined || input.category !== undefined) {
+    let currentCategory = "General";
+    let currentTitle = currentNote.title || "";
+    const match = currentTitle.match(/^\[(General|Appointment|Family|Care|Other)\]\s*(.*)$/i);
+    if (match) {
+      currentCategory = match[1];
+      currentTitle = match[2];
+    }
+    const newCategory = input.category ?? currentCategory;
+    const newTitle = (input.title ?? currentTitle).replace(/^\[[^\]]+\]\s*/, "").trim();
+    updateData.title = newCategory && newCategory !== "General" ? `[${newCategory}] ${newTitle}` : newTitle;
+  }
+
   if (input.body !== undefined) updateData.body = input.body;
-  if (input.category !== undefined) updateData.category = input.category;
-  if (input.relatedAppointmentId !== undefined) updateData.related_appointment_id = input.relatedAppointmentId;
-  if (input.relatedTaskId !== undefined) updateData.related_task_id = input.relatedTaskId;
 
   const { data: updated, error: updateError } = await supabase
     .from("notes")
@@ -159,17 +188,31 @@ export async function updateNoteAction(
     return { success: false, error: updateError?.message || "Failed to update note" };
   }
 
+  let finalCategory = "General";
+  let finalTitle = updated.title || "";
+  const match = finalTitle.match(/^\[(General|Appointment|Family|Care|Other)\]\s*(.*)$/i);
+  if (match) {
+    finalCategory = match[1];
+    finalTitle = match[2];
+  }
+
+  const mappedNote: Note = {
+    ...updated,
+    title: finalTitle,
+    category: finalCategory,
+  };
+
   await logTimelineEvent(supabase, {
     workspaceId: context.workspace.id,
     actorId: user.id,
     action: "updated",
     targetType: "note",
     targetId: noteId,
-    targetTitle: updated.title,
+    targetTitle: mappedNote.title,
   });
 
   revalidatePath("/notes");
-  return { success: true, data: updated as Note };
+  return { success: true, data: mappedNote };
 }
 
 /**
