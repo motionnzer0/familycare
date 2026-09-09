@@ -10,12 +10,14 @@ import { checkPermission } from "@/lib/permissions";
 
 describe("Emergency Information & Safety Copy (Slice 3 / D-23)", () => {
   it("contains exact approved safety copy", () => {
-    expect(EMERGENCY_SAFETY_BANNER_COPY).toBe("For an emergency, call local emergency services.");
-    expect(EMERGENCY_SAFETY_BANNER_SUBTEXT).toContain("This summary is family-entered reference information");
-    expect(EMERGENCY_SAFETY_BANNER_SUBTEXT).toContain("does not replace professional emergency response");
+    expect(EMERGENCY_SAFETY_BANNER_COPY).toBe("For an emergency, call 911 or local emergency services immediately.");
+    expect(EMERGENCY_SAFETY_BANNER_SUBTEXT).toBe(
+      "This workspace is a shared family reference tool and does not provide emergency response, medical dispatch, or clinical advice."
+    );
 
-    expect(EMERGENCY_FIELD_PREAMBLE_COPY).toContain("All details below are entered and maintained by your family.");
-    expect(EMERGENCY_FIELD_PREAMBLE_COPY).toContain("Confirm medical questions with a healthcare professional.");
+    expect(EMERGENCY_FIELD_PREAMBLE_COPY).toBe(
+      "All details below are entered and maintained by your family. Confirm medical questions with a healthcare professional."
+    );
   });
 
   it("validates emergency contact schema", () => {

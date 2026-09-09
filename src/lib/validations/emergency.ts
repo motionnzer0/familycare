@@ -16,10 +16,10 @@ export const emergencyInfoSchema = z.object({
 });
 
 export const EMERGENCY_SAFETY_BANNER_COPY =
-  "For an emergency, call local emergency services.";
+  "For an emergency, call 911 or local emergency services immediately.";
 
 export const EMERGENCY_SAFETY_BANNER_SUBTEXT =
-  "This summary is family-entered reference information for care coordination and does not replace professional emergency response.";
+  "This workspace is a shared family reference tool and does not provide emergency response, medical dispatch, or clinical advice.";
 
 export const EMERGENCY_FIELD_PREAMBLE_COPY =
   "All details below are entered and maintained by your family. Confirm medical questions with a healthcare professional.";
