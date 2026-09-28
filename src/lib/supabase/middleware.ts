@@ -75,6 +75,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/updates") ||
     request.nextUrl.pathname.startsWith("/emergency") ||
     request.nextUrl.pathname.startsWith("/settings") ||
+    request.nextUrl.pathname.startsWith("/onboarding") ||
     request.nextUrl.pathname.startsWith("/api/export");
 
   if (!user && isProtectedRoute) {

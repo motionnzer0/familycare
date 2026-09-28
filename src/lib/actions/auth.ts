@@ -75,6 +75,20 @@ export async function registerAction(formData: FormData): Promise<ActionResult> 
     };
   }
 
+  // If signUp didn't return an active session, sign in to establish session cookies
+  if (!data.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: parsed.data.email,
+      password: parsed.data.password,
+    });
+    if (signInError) {
+      return {
+        success: false,
+        error: "Account created. Please sign in with your email and password.",
+      };
+    }
+  }
+
   // Create initial user_profile record if user was created
   if (data.user) {
     await supabase.from("user_profiles").upsert({
