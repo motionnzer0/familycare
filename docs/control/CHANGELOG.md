@@ -4,7 +4,32 @@ Chronological log of major product, architecture, database, and control mileston
 
 ---
 
-## [Unreleased] — Checkpoint 1: Product Reconciliation
+## [V1.0.0-beta] — Beta Readiness & Release Synchronization
+
+### 2026-09-28
+- **Registration Session Persistence & Middleware Route Protection (`2bf7a67`):**
+  - Added fallback `signInWithPassword` in `registerAction` if `auth.signUp` does not return an active session, ensuring HTTP-only session cookies are set before redirecting to `/onboarding`.
+  - Added `/onboarding` to `isProtectedRoute` in `middleware.ts` to cleanly redirect unauthenticated traffic to `/login?redirectTo=%2Fonboarding`.
+  - Reconciled control documentation in `/docs/control/` (`PROJECT_STATE.md`, `ACTIVE_SPRINT.md`, `HANDOFF_ANTIGRAVITY.md`, `CHANGELOG.md`).
+
+### 2026-09-09
+- **Medications and Notes Action Payload Alignment (`ddbfd56`):**
+  - Aligned server actions in `src/lib/actions/medications.ts` and `src/lib/actions/notes.ts` with canonical PostgreSQL table columns (`form_strength`, `prescriber_pharmacy`, `note`, `title`, `body`, `author_id`).
+  - Resolved Checkpoint 6 schema-action payload mismatch without altering the database schema.
+
+### 2026-09-08
+- **Emergency Safety Banner Copy Alignment (`3c70624`):**
+  - Aligned emergency safety banner copy in `src/lib/validations/emergency.ts` with canonical Decision `D-23`.
+- **Checkpoint 5 UX Refinements Backlog Implementation (`f552c97`):**
+  - Implemented all 9 approved UX polish items (`UX-01` through `UX-09`):
+    - Expanded touch target heights to $\ge 36\text{px}$–$44\text{px}$ for filter pills and action buttons on `/documents`, `/notes`, `/tasks`, `/calendar`, and `/today`.
+    - Added mobile horizontal scroll wrappers with clear visual padding.
+    - Implemented modal focus trapping, accessible labels, and keyboard navigation.
+    - Standardized empty-state ergonomics across all surfaces.
+
+---
+
+## [Checkpoint 1: Product Reconciliation] — Complete
 
 ### 2026-09-07
 - **Care Profile & Emergency Redesign (Slice 3) — Complete:**
